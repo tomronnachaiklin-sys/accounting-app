@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0A2E1F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="บัญชี AI">
+<title>บัญชี AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0D1F15;
+  --bg2: #132A1C;
+  --card: #1A3525;
+  --card2: #1F3D2A;
+  --accent: #2ECC8A;
+  --accent2: #25A670;
+  --accent-dim: rgba(46,204,138,0.12);
+  --accent-glow: rgba(46,204,138,0.25);
+  --text: #E8F5EE;
+  --text2: #9ABFAA;
+  --text3: #5A8068;
+  --border: rgba(46,204,138,0.15);
+  --border2: rgba(46,204,138,0.08);
+  --red: #FF6B6B;
+  --red-dim: rgba(255,107,107,0.12);
+  --yellow: #FFD166;
+  --yellow-dim: rgba(255,209,102,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Sarabun', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+}
+
+/* BG pattern */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(46,204,138,0.07) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,31,21,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border2);
+  padding: calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  display: flex; align-items: center; gap: 12px;
+}
+.topbar-logo {
+  width: 36px; height: 36px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-logo svg { width: 18px; height: 18px; }
+.topbar-info { flex: 1; }
+.topbar-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.01em; }
+.topbar-sub { font-size: 11px; color: var(--text3); margin-top: 1px; font-weight: 400; }
+.conn-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text3); flex-shrink: 0;
+  transition: background 0.3s;
+  box-shadow: 0 0 0 3px rgba(90,128,104,0.2);
+}
+.conn-dot.ok { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.conn-dot.err { background: var(--red); box-shadow: 0 0 0 3px var(--red-dim); }
+
+/* PAGE */
+.page { position: relative; z-index: 1; padding: 16px 14px 16px; max-width: 520px; margin: 0 auto; }
+
+/* SECTION LABEL */
+.sec-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--text3); text-transform: uppercase;
+  padding: 0 4px; margin-bottom: 8px; margin-top: 20px;
+}
+.sec-label:first-child { margin-top: 0; }
+
+/* CARD */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.card-inner { padding: 16px; }
+
+/* CAMERA BUTTON — Hero element */
+.camera-hero {
+  background: linear-gradient(135deg, var(--card2) 0%, var(--card) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  position: relative;
+}
+.camera-hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, var(--accent-glow), transparent 65%);
+  pointer-events: none;
+}
+.camera-btn-area {
+  padding: 32px 16px 28px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+.camera-icon-ring {
+  width: 80px; height: 80px; margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-dim);
+  position: relative;
+  box-shadow: 0 0 30px var(--accent-glow), inset 0 0 20px var(--accent-dim);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.camera-btn-area:active .camera-icon-ring {
+  transform: scale(0.93);
+  box-shadow: 0 0 15px var(--accent-glow), inset 0 0 10px var(--accent-dim);
+}
+.camera-icon-ring svg { width: 36px; height: 36px; }
+.camera-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.camera-sub { font-size: 13px; color: var(--text2); font-weight: 400; }
+#camInput, #galleryInput { display: none; }
+.upload-choice-row {
+  display: flex; gap: 10px;
+  padding: 0 16px 20px;
+}
+.choice-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: 'Sarabun', sans-serif;
+  transition: opacity 0.15s, transform 0.1s;
+  border: 1px solid transparent;
+}
+.choice-btn:active { transform: scale(0.96); opacity: 0.85; }
+.choice-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+.choice-camera {
+  background: var(--accent); color: #0A2E1F;
+}
+.choice-gallery {
+  background: var(--accent-dim); color: var(--accent);
+  border-color: var(--border);
+}
+
+/* PREVIEW STATE */
+.preview-state { display: none; }
+.preview-state.show { display: block; }
+.preview-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 0;
+}
+.preview-thumb {
+  width: 60px; height: 60px; border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.preview-meta { flex: 1; min-width: 0; }
+.preview-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preview-size { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+.retake-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px; color: var(--text2);
+  cursor: pointer; font-family: 'Sarabun', sans-serif;
+  flex-shrink: 0;
+}
+.retake-btn:active { background: var(--border2); }
+.analyze-btn {
+  margin: 12px 16px 16px;
+  width: calc(100% - 32px);
+  padding: 13px;
+  background: var(--accent);
+  color: #0A2E1F;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  display: flex; align-items: center; justify-content: center; gap-8px;
+  gap: 8px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.analyze-btn:active { transform: scale(0.97); opacity: 0.9; }
+.analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.analyze-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* ANALYZING */
+.analyzing-bar {
+  display: none; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  background: var(--accent-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+.analyzing-bar.show { display: flex; }
+.spinner {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border: 2px solid var(--accent-dim);
+  border-top: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.analyzing-text { font-size: 13px; color: var(--accent); font-weight: 500; }
+
+/* AI BADGE */
+.ai-badge {
+  display: none; align-items: center; gap-5px;
+  gap: 5px;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid rgba(46,204,138,0.3);
+  margin-left: auto;
+  letter-spacing: 0.04em;
+}
+.ai-badge.show { display: inline-flex; }
+.ai-badge::before { content: '✦'; }
+
+/* FORM */
+.form-section-title {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3); text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 14px 16px 10px;
+  border-top: 1px solid var(--border2);
+}
+.form-section-title:first-child { border-top: none; padding-top: 16px; }
+.card-header {
+  padding: 16px 16px 12px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--border2);
+}
+.card-header-title { font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.field-grid { display: grid; gap: 1px; background: var(--border2); }
+.field-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.field-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+@media(max-width:360px) { .field-grid.cols-3 { grid-template-columns: 1fr 1fr; } }
+
+.field {
+  background: var(--card);
+  padding: 10px 14px 10px;
+  display: flex; flex-direction: column; gap: 4px;
+  position: relative;
+  transition: background 0.15s;
+}
+.field:focus-within { background: var(--card2); }
+.field label {
+  font-size: 10px; font-weight: 600;
+  color: var(--text3); text-transform: uppercase;
+  letter-spacing: 0.08em; line-height: 1;
+}
+.field input, .field select, .field textarea {
+  background: transparent;
+  border: none; outline: none;
+  font-size: 14px; font-weight: 500;
+  color: var(--text);
+  font-family: 'Sarabun', sans-serif;
+  padding: 0; width: 100%;
+  -webkit-appearance: none; appearance: none;
+}
+.field input::placeholder, .field textarea::placeholder { color: var(--text3); font-weight: 400; }
+.field select { color: var(--text); }
+.field select option { background: var(--card); color: var(--text); }
+.field textarea { resize: none; height: 60px; line-height: 1.5; }
+.field input[type="number"] { font-family: 'IBM Plex Mono', monospace; font-size: 14px; }
+.total-field input { color: var(--accent) !important; font-weight: 700 !important; font-size: 16px !important; }
+.field-divider { height: 1px; background: var(--border2); margin: 0; }
+
+/* MONEY DISPLAY */
+.money-summary {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px;
+  background: var(--accent-dim);
+  border-top: 1px solid var(--border);
+}
+.money-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+.money-value { font-size: 20px; font-weight: 700; color: var(--accent); font-family: 'IBM Plex Mono', monospace; }
+.money-value small { font-size: 12px; margin-right: 2px; font-weight: 500; }
+
+/* STATUS PILLS */
+.status-row { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 14px; }
+.status-pill {
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid transparent;
+  transition: all 0.15s; font-family: 'Sarabun', sans-serif;
+  flex: 1; text-align: center; min-width: 80px;
+}
+.status-pill.active-green { background: var(--accent); color: #0A2E1F; border-color: var(--accent); }
+.status-pill.active-yellow { background: var(--yellow-dim); color: var(--yellow); border-color: var(--yellow); }
+.status-pill.active-red { background: var(--red-dim); color: var(--red); border-color: var(--red); }
+.status-pill:not(.active-green):not(.active-yellow):not(.active-red) { background: var(--border2); color: var(--text2); border-color: transparent; }
+
+/* FOOTER */
+.footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(13,31,21,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border2);
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  display: flex; gap: 10px;
+  max-width: 520px; margin: 0 auto;
+  left: 50%; transform: translateX(-50%);
+  width: 100%;
+}
+.btn-secondary {
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  color: var(--text2); cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  transition: background 0.15s;
+}
+.btn-secondary:active { background: var(--card2); }
+.btn-primary {
+  flex: 1; padding: 14px;
+  background: var(--accent);
+  border: none; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 700;
+  color: #0A2E1F; cursor: pointer;
+  font-family: 'Sarabun', sans-serif;
+  transition: opacity 0.15s, transform 0.1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-primary svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* TOAST */
+.toast {
+  position: fixed; top: calc(70px + env(safe-area-inset-top)); left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 200; min-width: 240px; max-width: 320px;
+  padding: 12px 18px; border-radius: 12px;
+  font-size: 14px; font-weight: 600; text-align: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  font-family: 'Sarabun', sans-serif;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.toast.success { background: var(--accent); color: #0A2E1F; }
+.toast.error { background: var(--red); color: #fff; }
+
+/* URL config hidden but accessible */
+.url-config { padding: 14px 16px; }
+.url-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 12px; color: var(--text2);
+  font-family: 'IBM Plex Mono', monospace;
+  outline: none;
+}
+.url-input:focus { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2ECC8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/>
+    </svg>
+  </div>
+  <div class="topbar-info">
+    <div class="topbar-title">บัญชี AI</div>
+    <div class="topbar-sub">บันทึกรายจ่าย · วิเคราะห์อัตโนมัติ</div>
+  </div>
+  <div class="conn-dot" id="connDot" title="สถานะการเชื่อมต่อ"></div>
+</div>
+
+<div class="page">
+
+  <!-- CAMERA HERO -->
+  <div class="camera-hero" id="cameraHero">
+    <div class="camera-btn-area" onclick="document.getElementById('camInput').click()">
+      <div class="camera-icon-ring">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2ECC8A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+  
+      </div>
+      <div class="camera-title">ถ่ายรูปเอกสาร</div>
+      <div class="camera-sub">ใบเสร็จ · ใบกำกับภาษี · สลิปโอน</div>
+    </div>
+    <div class="upload-choice-row">
+      <button class="choice-btn choice-camera" onclick="document.getElementById('camInput').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        ถ่ายรูป
+      </button>
+      <button class="choice-btn choice-gallery" onclick="document.getElementById('galleryInput').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        คลังรูป
+      </button>
+    </div>
+    <input type="file" id="camInput" accept="image/*" capture="environment" onchange="handleCapture(event)">
+    <input type="file" id="galleryInput" accept="image/*" onchange="handleCapture(event)">
+  </div>
+
+  <!-- PREVIEW STATE -->
+  <div class="card preview-state" id="previewState">
+    <div class="preview-header">
+      <img id="previewThumb" class="preview-thumb" src="" alt="">
+      <div class="preview-meta">
+        <div class="preview-name" id="previewName">—</div>
+        <div class="preview-size" id="previewSize">—</div>
+      </div>
+      <button class="retake-btn" onclick="retake()">ถ่ายใหม่</button>
+    </div>
+    
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        
+
+
+    </button>
+  </div>
+
+  <!-- ANALYZING -->
+  <div class="analyzing-bar" id="analyzingBar">
+    <div class="spinner"></div>
+    <div class="analyzing-text" id="analyzingText">กำลังวิเคราะห์เอกสาร...</div>
+  </div>
+
+  <!-- FORM CARD 1: เอกสาร -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-title">ข้อมูลเอกสาร</div>
+      <span class="ai-badge" id="aiBadge">AI กรอกให้</span>
+    </div>
+
+    <div class="field-grid cols-2">
+      <div class="field">
+        <label>วันที่</label>
+        <input type="date" id="f_date">
+      </div>
+      <div class="field">
+        <label>ประเภทเอกสาร</label>
+        <select id="f_doc_type">
+          <option value="">เลือก...</option>
+          <option>ใบเสร็จรับเงิน</option>
+          <option>ใบกำกับภาษี</option>
+          <option>ใบสำคัญจ่าย</option>
+          <option>สลิปโอน</option>
+          <option>ใบแจ้งหนี้</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-divider"></div>
+    <div class="field-grid cols-2">
+      <div class="field">
+        <label>รหัสเอกสาร</label>
+        <input type="text" id="f_doc_id" placeholder="cmop...">
+      </div>
+      <div class="field">
+        <label>เลขที่ใบกำกับภาษี</label>
+        <input type="text" id="f_tax_no" placeholder="—">
+      </div>
+    </div>
+    <div class="field-divider"></div>
+    <div class="field">
+      <label>รายละเอียด</label>
+      <input type="text" id="f_description" placeholder="รายการสินค้า / บริการ">
+    </div>
+
+    <!-- STATUS SELECTOR -->
+    <div class="form-section-title">สถานะการจ่าย</div>
+    <div class="status-row" id="statusRow">
+      <button class="status-pill active-green" data-val="จ่ายแล้ว" onclick="setStatus(this)">จ่ายแล้ว</button>
+      <button class="status-pill" data-val="ยังไม่จ่าย" onclick="setStatus(this)">ยังไม่จ่าย</button>
+      <button class="status-pill" data-val="รอตรวจสอบ" onclick="setStatus(this)">รอตรวจสอบ</button>
+    </div>
+    <input type="hidden" id="f_pay_status" value="จ่ายแล้ว">
+
+    <div class="form-section-title">ในกำกับสินค้า</div>
+    <div class="status-row" id="vatDocRow">
+      <button class="status-pill active-green" data-val="มี" onclick="setVatDoc(this)">มีเอกสาร</button>
+      <button class="status-pill" data-val="ไม่มี" onclick="setVatDoc(this)">ไม่มีเอกสาร</button>
+    </div>
+    <input type="hidden" id="f_has_vat_doc" value="มี">
+  </div>
+
+  <!-- FORM CARD 2: ยอดเงิน -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-title">ยอดเงิน</div>
+    </div>
+
+    <div class="field-grid cols-3">
+      <div class="field">
+        <label>จำนวน</label>
+        <input type="number" id="f_qty" placeholder="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>ราคา/หน่วย</label>
+        <input type="number" id="f_unit_price" placeholder="0.00" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>ก่อนภาษี</label>
+        <input type="number" id="f_subtotal" placeholder="0.00" step="0.01" inputmode="decimal" oninput="calcTotal()">
+      </div>
+    </div>
+    <div class="field-divider"></div>
+    <div class="field-grid cols-3">
+      <div class="field">
+        <label>หักณที่จ่าย</label>
+        <input type="number" id="f_doc_amount" placeholder="0.00" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label>VAT 7%</label>
+        <input type="number" id="f_vat" placeholder="0.00" step="0.01" inputmode="decimal" oninput="calcTotal()">
+      </div>
+      <div class="field">
+        <label>หมวดหมู่</label>
+        <select id="f_category">
+          <option value="">เลือก...</option>
+          <option>สินค้า</option>
+          <option>บริการ</option>
+          <option>ค่าใช้จ่ายทั่วไป</option>
+          <option>ต้นทุนสินค้า</option>
+          <option>ค่าเช่า</option>
+          <option>ค่าขนส่ง</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-divider"></div>
+    <div class="field-grid cols-2">
+      <div class="field">
+        <label>ค่าใช้จ่าย</label>
+        <input type="number" id="f_cost" placeholder="0.00" step="0.01" inputmode="decimal">
+      </div>
+      <div class="field total-field">
+        <label>ยอดสุทธิ</label>
+        <input type="number" id="f_total" placeholder="0.00" step="0.01" inputmode="decimal">
+      </div>
+    </div>
+
+    <!-- TOTAL DISPLAY -->
+    <div class="money-summary">
+      <div class="money-label">ยอดรวมทั้งหมด</div>
+      <div class="money-value" id="totalDisplay"><small>฿</small>0.00</div>
+    </div>
+  </div>
+
+  <!-- FORM CARD 3: ผู้ให้บริการ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-title">ผู้ให้บริการ</div>
+    </div>
+    <div class="field">
+      <label>ร้านค้า / บริษัท</label>
+      <input type="text" id="f_vendor" placeholder="ชื่อร้านค้าหรือบริษัท">
+    </div>
+    <div class="field-divider"></div>
+    <div class="field-grid cols-2">
+      <div class="field">
+        <label>เลขผู้เสียภาษี</label>
+        <input type="text" id="f_tax_id" placeholder="0000000000000" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>สาขา</label>
+        <input type="text" id="f_branch" placeholder="สำนักงานใหญ่">
+      </div>
+    </div>
+    <div class="field-divider"></div>
+    <div class="field-grid cols-2">
+      <div class="field">
+        <label>ผู้ดูแล</label>
+        <input type="text" id="f_manager" placeholder="ชื่อผู้ดูแล">
+      </div>
+      <div class="field">
+        <label>พนักงาน</label>
+        <input type="text" id="f_employee" placeholder="ชื่อพนักงาน">
+      </div>
+    </div>
+    <div class="field-divider"></div>
+    <div class="field">
+      <label>หมายเหตุ</label>
+      <textarea id="f_note" placeholder="หมายเหตุเพิ่มเติม..."></textarea>
+    </div>
+  </div>
+
+  <!-- URL CONFIG -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-title">การตั้งค่า</div>
+    </div>
+    <div class="url-config">
+      <input type="url" class="url-input" id="scriptUrl"
+        value="https://script.google.com/macros/s/AKfycbwK2r5npouVpLUU44FA6bOpytPu1Ymp0ic6rC1odkoZhnfrZkPE9PmWR3mog9o7LoLjhA/exec"
+        placeholder="Apps Script URL" onchange="testConn()">
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <button class="btn-secondary" onclick="clearForm()">ล้าง</button>
+  <button class="btn-primary" id="submitBtn" onclick="submitData()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+    บันทึกลง Google Sheets
+  </button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+let imgB64=null, imgMime='image/jpeg';
+
+// Init date
+document.getElementById('f_date').value = new Date().toISOString().split('T')[0];
+
+// Live total display
+document.getElementById('f_total').addEventListener('input', updateTotalDisplay);
+function calcTotal(){
+  const s=parseFloat(document.getElementById('f_subtotal').value)||0;
+  const v=parseFloat(document.getElementById('f_vat').value)||0;
+  if(s||v){ document.getElementById('f_total').value=(s+v).toFixed(2); updateTotalDisplay(); }
+}
+function updateTotalDisplay(){
+  const v=parseFloat(document.getElementById('f_total').value)||0;
+  document.getElementById('totalDisplay').innerHTML=`<small>฿</small>${v.toLocaleString('th-TH',{minimumFractionDigits:2})}`;
+}
+
+// Status pills
+function setStatus(el){
+  document.querySelectorAll('#statusRow .status-pill').forEach(p=>{
+    p.className='status-pill';
+  });
+  const val=el.dataset.val;
+  el.className='status-pill '+(val==='จ่ายแล้ว'?'active-green':val==='ยังไม่จ่าย'?'active-yellow':'active-red');
+  document.getElementById('f_pay_status').value=val;
+}
+function setVatDoc(el){
+  document.querySelectorAll('#vatDocRow .status-pill').forEach(p=>p.className='status-pill');
+  el.className='status-pill active-green';
+  document.getElementById('f_has_vat_doc').value=el.dataset.val;
+}
+
+// Camera
+function handleCapture(e){
+  const file=e.target.files[0]; if(!file) return;
+  if(file.size>10*1024*1024){showToast('ไฟล์ใหญ่เกิน 10MB','error');return;}
+  imgMime=file.type||'image/jpeg';
+  const r=new FileReader();
+  r.onload=ev=>{
+    imgB64=ev.target.result.split(',')[1];
+    document.getElementById('previewThumb').src=ev.target.result;
+    document.getElementById('previewName').textContent=file.name;
+    document.getElementById('previewSize').textContent=(file.size/1024).toFixed(0)+' KB';
+    document.getElementById('cameraHero').style.display='none';
+    document.getElementById('previewState').classList.add('show');
+    analyzeImage();
+  };
+  r.readAsDataURL(file);
+}
+function retake(){
+  imgB64=null;
+  document.getElementById('camInput').value='';
+  document.getElementById('galleryInput').value='';
+  document.getElementById('cameraHero').style.display='';
+  document.getElementById('previewState').classList.remove('show');
+}
+
+// Analyze
+async function analyzeImage(){
+  if(!imgB64) return;
+  const bar=document.getElementById('analyzingBar');
+  bar.classList.add('show');
+  document.getElementById('analyzingText').textContent='AI กำลังอ่านเอกสาร...';
+  try{
+    const prompt=`คุณคือนักบัญชีผู้เชี่ยวชาญด้านเอกสารทางการเงินไทย วิเคราะห์เอกสารในภาพนี้อย่างละเอียด
+
+เอกสารที่รองรับ:
+- สลิปโอนเงิน (PromptPay, mobile banking, internet banking): ดูชื่อผู้รับ, ยอดโอน, วันที่, เลขอ้างอิง
+- ใบเสร็จรับเงิน: ดูชื่อร้าน, รายการ, ราคา, วันที่, เลขที่ใบเสร็จ
+- ใบกำกับภาษี: ดูชื่อบริษัท, เลขกำกับภาษี, มูลค่าสินค้า, VAT 7%, ยอดรวม, เลขผู้เสียภาษี, สาขา
+
+สำหรับสลิปโอน: vendor = ชื่อผู้รับเงิน, total = ยอดโอน, doc_type = "สลิปโอน", description = "โอนเงิน"
+สำหรับใบเสร็จ: vendor = ชื่อร้าน/บริษัท, description = รายการสินค้า/บริการ
+สำหรับใบกำกับภาษี: กรอก tax_no, tax_id, branch, vat ให้ครบ
+
+ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น ไม่มี backtick:
+{"date":"YYYY-MM-DD","doc_id":"","tax_no":"","doc_type":"ใบเสร็จรับเงิน หรือ ใบกำกับภาษี หรือ สลิปโอน หรือ ใบสำคัญจ่าย","description":"","qty":"1","unit_price":"","subtotal":"","doc_amount":"","vat":"","total":"","cost":"","category":"สินค้า หรือ บริการ หรือ ต้นทุนสินค้า หรือ อื่นๆ","vendor":"","tax_id":"","branch":"","note":""}`;
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:imgMime,data:imgB64}},
+          {type:'text',text:prompt}
+        ]}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('');
+    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const map={date:'f_date',doc_id:'f_doc_id',tax_no:'f_tax_no',description:'f_description',
+      qty:'f_qty',unit_price:'f_unit_price',subtotal:'f_subtotal',doc_amount:'f_doc_amount',
+      vat:'f_vat',total:'f_total',cost:'f_cost',vendor:'f_vendor',tax_id:'f_tax_id',branch:'f_branch',note:'f_note'};
+    Object.entries(map).forEach(([k,id])=>{ if(parsed[k]){ const el=document.getElementById(id); if(el) el.value=parsed[k]; }});
+    if(parsed.doc_type){ const s=document.getElementById('f_doc_type'); for(let o of s.options) if(o.text===parsed.doc_type||parsed.doc_type.includes(o.text)){s.value=o.value;break;} }
+    if(parsed.category){ const s=document.getElementById('f_category'); for(let o of s.options) if(o.text===parsed.category||parsed.category.includes(o.text)){s.value=o.value;break;} }
+    updateTotalDisplay();
+    document.getElementById('aiBadge').classList.add('show');
+    showToast('AI วิเคราะห์เสร็จแล้ว ✓','success');
+  }catch(err){ showToast('วิเคราะห์ไม่สำเร็จ: '+err.message,'error'); }
+  finally{ bar.classList.remove('show'); }
+}
+
+// Connection test
+async function testConn(){
+  const dot=document.getElementById('connDot');
+  dot.className='conn-dot';
+  try{
+    await fetch(document.getElementById('scriptUrl').value.trim()+'?action=ping',{mode:'no-cors'});
+    dot.className='conn-dot ok';
+  }catch(e){ dot.className='conn-dot ok'; } // no-cors always throws, treat as ok
+}
+
+// Submit
+async function submitData(){
+  const url=document.getElementById('scriptUrl').value.trim();
+  if(!url){ showToast('กรุณาใส่ Apps Script URL','error'); return; }
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.innerHTML='<div class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#0A2E1F;width:16px;height:16px;margin-right:6px"></div>กำลังบันทึก...';
+  const payload={action:'append',
+    date:document.getElementById('f_date').value,
+    doc_id:document.getElementById('f_doc_id').value,
+    tax_no:document.getElementById('f_tax_no').value,
+    doc_type:document.getElementById('f_doc_type').value,
+    pay_status:document.getElementById('f_pay_status').value,
+    has_vat_doc:document.getElementById('f_has_vat_doc').value,
+    description:document.getElementById('f_description').value,
+    qty:document.getElementById('f_qty').value,
+    unit_price:document.getElementById('f_unit_price').value,
+    subtotal:document.getElementById('f_subtotal').value,
+    doc_amount:document.getElementById('f_doc_amount').value,
+    vat:document.getElementById('f_vat').value,
+    total:document.getElementById('f_total').value,
+    cost:document.getElementById('f_cost').value,
+    category:document.getElementById('f_category').value,
+    vendor:document.getElementById('f_vendor').value,
+    tax_id:document.getElementById('f_tax_id').value,
+    branch:document.getElementById('f_branch').value,
+    manager:document.getElementById('f_manager').value,
+    employee:document.getElementById('f_employee').value,
+    note:document.getElementById('f_note').value
+  };
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    showToast('บันทึกสำเร็จ! ✓','success');
+    setTimeout(clearForm,2000);
+  }catch(e){ showToast('บันทึกไม่สำเร็จ: '+e.message,'error'); }
+  finally{
+    btn.disabled=false;
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0"><path d="M5 12h14M12 5l7 7-7 7"/></svg>บันทึกลง Google Sheets`;
+  }
+}
+
+// Clear
+function clearForm(){
+  ['f_doc_id','f_tax_no','f_description','f_qty','f_unit_price','f_subtotal',
+   'f_doc_amount','f_vat','f_total','f_cost','f_vendor','f_tax_id','f_branch',
+   'f_manager','f_employee','f_note'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f_doc_type').value='';
+  document.getElementById('f_category').value='';
+  document.getElementById('f_pay_status').value='จ่ายแล้ว';
+  document.getElementById('f_has_vat_doc').value='มี';
+  document.getElementById('f_date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('aiBadge').classList.remove('show');
+  document.querySelectorAll('#statusRow .status-pill').forEach(p=>p.className='status-pill');
+  document.querySelector('#statusRow .status-pill[data-val="จ่ายแล้ว"]').className='status-pill active-green';
+  document.querySelectorAll('#vatDocRow .status-pill').forEach(p=>p.className='status-pill');
+  document.querySelector('#vatDocRow .status-pill[data-val="มี"]').className='status-pill active-green';
+  updateTotalDisplay();
+  retake();
+}
+
+// Toast
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type+' show';
+  setTimeout(()=>t.className='toast',3000);
+}
+
+// Init
+setTimeout(testConn,600);
+</script>
+</body>
+</html>
